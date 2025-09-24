@@ -1,0 +1,31 @@
+{
+  "name": "bulamuchain-smart-contracts",
+  "version": "1.0.0",
+  "description": "Smart contracts for BulamuChainBot healthcare blockchain system",
+  "main": "index.js",
+  "scripts": {
+    "compile": "truffle compile",
+    "migrate": "truffle migrate",
+    "test": "truffle test",
+    "deploy:development": "truffle migrate --network development",
+    "deploy:sepolia": "truffle migrate --network sepolia",
+    "deploy:goerli": "truffle migrate --network goerli"
+  },
+  "keywords": [
+    "blockchain",
+    "healthcare",
+    "ethereum",
+    "smart-contracts",
+    "medical-records",
+    "medicine-authentication"
+  ],
+  "author": "BulamuChainBot Team",
+  "license": "MIT",
+  "devDependencies": {
+    "truffle": "^5.11.5",
+    "@truffle/hdwallet-provider": "^2.1.15"
+  },
+  "dependencies": {
+    "web3": "^4.2.2"
+  }
+}
