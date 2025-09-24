@@ -16,6 +16,7 @@ from .serializers import (
     OTPRequestSerializer, OTPVerificationSerializer,
     PasswordResetSerializer, PasswordResetConfirmSerializer
 )
+from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
@@ -65,6 +66,80 @@ class RegisterView(APIView):
         # TODO: Send SMS with OTP
         # For development, just log it
         print(f"OTP for {phone_number}: {otp_code}")
+
+class LoginView(APIView):
+    """
+    Custom login endpoint that accepts email or username
+    """
+    permission_classes = [permissions.AllowAny]
+    
+    def post(self, request):
+        username_or_email = request.data.get('username', '')
+        password = request.data.get('password', '')
+        
+        if not username_or_email or not password:
+            return Response({
+                'error': 'Username/email and password are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Try to find user by email first, then by username
+        user = None
+        if '@' in username_or_email:
+            try:
+                user = CustomUser.objects.get(email=username_or_email)
+                username = user.username
+            except CustomUser.DoesNotExist:
+                pass
+        else:
+            username = username_or_email
+        
+        # Authenticate user
+        authenticated_user = authenticate(request, username=username, password=password)
+        
+        if authenticated_user:
+            # Generate JWT tokens
+            refresh = RefreshToken.for_user(authenticated_user)
+            
+            # Log successful login
+            LoginAttempt.objects.create(
+                user=authenticated_user,
+                ip_address=request.META.get('REMOTE_ADDR'),
+                user_agent=request.META.get('HTTP_USER_AGENT'),
+                attempt_type='success'
+            )
+            
+            return Response({
+                'access': str(refresh.access_token),
+                'refresh': str(refresh),
+                'user': {
+                    'id': str(authenticated_user.id),
+                    'username': authenticated_user.username,
+                    'email': authenticated_user.email,
+                    'first_name': authenticated_user.first_name,
+                    'last_name': authenticated_user.last_name,
+                    'user_type': authenticated_user.user_type,
+                }
+            }, status=status.HTTP_200_OK)
+        else:
+            # Log failed login
+            try:
+                user_for_log = CustomUser.objects.get(
+                    username=username if '@' not in username_or_email else username_or_email
+                ) if '@' not in username_or_email else CustomUser.objects.get(email=username_or_email)
+                
+                LoginAttempt.objects.create(
+                    user=user_for_log,
+                    ip_address=request.META.get('REMOTE_ADDR'),
+                    user_agent=request.META.get('HTTP_USER_AGENT'),
+                    attempt_type='failed_password'
+                )
+            except CustomUser.DoesNotExist:
+                # User doesn't exist, log as failed username
+                pass
+            
+            return Response({
+                'error': 'Invalid credentials'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 class VerifyPhoneView(APIView):
     """
