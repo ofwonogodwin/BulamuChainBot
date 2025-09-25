@@ -10,13 +10,16 @@ import {
     ChevronDown,
     Menu,
     X,
-    BarChart3
+    BarChart3,
+    MessageCircle
 } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage, LANGUAGES } from '@/contexts/LanguageContext';
 
 export default function Navigation() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+    const { currentLanguage, setCurrentLanguage, getCurrentLanguageData } = useLanguage();
 
     const features = [
         {
@@ -25,6 +28,13 @@ export default function Navigation() {
             description: 'Talk to AI in your language',
             href: '/voice-consultation',
             badge: 'New'
+        },
+        {
+            icon: <MessageCircle className="h-4 w-4" />,
+            title: 'Consultation',
+            description: 'Chat with AI health assistant',
+            href: '/consultation',
+            badge: null
         },
         {
             icon: <Activity className="h-4 w-4" />,
@@ -49,11 +59,7 @@ export default function Navigation() {
         }
     ];
 
-    const languages = [
-        { code: 'en', name: 'English', flag: '🇺🇸' },
-        { code: 'lg', name: 'Luganda', flag: '🇺🇬' },
-        { code: 'sw', name: 'Swahili', flag: '🇰🇪' }
-    ];
+
 
     return (
         <>
@@ -61,35 +67,39 @@ export default function Navigation() {
             <button
                 onClick={() => setIsMenuOpen(true)}
                 className="fixed top-4 left-4 z-40 md:hidden bg-white/90 backdrop-blur-sm p-2 rounded-xl shadow-lg border border-gray-200/50 hover:bg-white transition-all duration-200"
+                title="Open Menu"
             >
                 <Menu className="h-5 w-5 text-gray-700" />
             </button>
 
-            {/* Language Selector - Top Left for Desktop */}
-            <div className="fixed top-6 left-6 z-30 hidden md:block">
+            {/* Language Selector - Top Right for Desktop */}
+            <div className="fixed top-6 right-24 z-30 hidden md:block">
                 <div className="relative">
                     <button
                         onClick={() => setIsLanguageOpen(!isLanguageOpen)}
                         className="flex items-center space-x-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-xl shadow-lg border border-gray-200/50 hover:bg-white transition-all duration-200"
+                        title="Select Language"
                     >
                         <Globe className="h-4 w-4 text-blue-600" />
-                        <span className="text-sm font-medium text-gray-700">English</span>
+                        <span className="text-sm font-medium text-black">
+                            {getCurrentLanguageData().name}
+                        </span>
                         <ChevronDown className="h-3 w-3 text-gray-500" />
                     </button>
 
                     {isLanguageOpen && (
                         <div className="absolute top-full mt-2 left-0 bg-white rounded-xl shadow-xl border border-gray-200/50 py-2 min-w-[120px] z-50">
-                            {languages.map((lang) => (
+                            {LANGUAGES.map((lang) => (
                                 <button
                                     key={lang.code}
-                                    className="w-full flex items-center space-x-3 px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
+                                    className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-black hover:bg-gray-50 transition-colors"
                                     onClick={() => {
-                                        // Handle language change here
+                                        setCurrentLanguage(lang.code);
                                         setIsLanguageOpen(false);
                                     }}
+                                    title={`Switch to ${lang.name}`}
                                 >
-                                    <span>{lang.flag}</span>
-                                    <span>{lang.name}</span>
+                                    <span className="text-black">{lang.name}</span>
                                 </button>
                             ))}
                         </div>
@@ -97,42 +107,7 @@ export default function Navigation() {
                 </div>
             </div>
 
-            {/* Feature Navigation - Bottom */}
-            <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-30 hidden md:block">
-                <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-4">
-                    <div className="flex items-center space-x-6">
-                        {features.map((feature, index) => (
-                            <Link
-                                key={index}
-                                href={feature.href}
-                                className="relative group flex flex-col items-center space-y-2 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200"
-                            >
-                                <div className="flex items-center justify-center w-10 h-10 bg-blue-50 rounded-full group-hover:bg-blue-100 transition-colors">
-                                    {feature.icon}
-                                </div>
-                                <span className="text-xs font-medium text-gray-600 group-hover:text-gray-800">
-                                    {feature.title}
-                                </span>
-                                {feature.badge && (
-                                    <div className={`absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${feature.badge === 'Critical'
-                                            ? 'bg-red-500 text-white'
-                                            : 'bg-green-500 text-white'
-                                        }`}>
-                                        {feature.badge}
-                                    </div>
-                                )}
 
-                                {/* Tooltip */}
-                                <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 hidden group-hover:block">
-                                    <div className="bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                                        {feature.description}
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
-            </div>
 
             {/* Mobile Slide-out Menu */}
             {isMenuOpen && (
@@ -157,6 +132,7 @@ export default function Navigation() {
                                 <button
                                     onClick={() => setIsMenuOpen(false)}
                                     className="p-2 rounded-lg hover:bg-gray-100"
+                                    title="Close Menu"
                                 >
                                     <X className="h-5 w-5 text-gray-500" />
                                 </button>
@@ -165,14 +141,20 @@ export default function Navigation() {
                             {/* Language Selector */}
                             <div className="mb-6">
                                 <h3 className="text-sm font-medium text-gray-500 mb-3">Language</h3>
-                                <div className="grid grid-cols-1 gap-2">
-                                    {languages.map((lang) => (
+                                <div className="space-y-2">
+                                    {LANGUAGES.map((lang) => (
                                         <button
                                             key={lang.code}
-                                            className="flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50 transition-colors"
+                                            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm rounded-lg hover:bg-gray-50 transition-colors ${
+                                                currentLanguage === lang.code ? 'bg-blue-50 text-blue-600' : 'text-black'
+                                            }`}
+                                            onClick={() => {
+                                                setCurrentLanguage(lang.code);
+                                                setIsMenuOpen(false);
+                                            }}
+                                            title={`Switch to ${lang.name}`}
                                         >
-                                            <span className="text-lg">{lang.flag}</span>
-                                            <span className="font-medium">{lang.name}</span>
+                                            <span className={currentLanguage === lang.code ? 'text-blue-600' : 'text-black'}>{lang.name}</span>
                                         </button>
                                     ))}
                                 </div>

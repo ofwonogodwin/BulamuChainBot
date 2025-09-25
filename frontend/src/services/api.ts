@@ -2,7 +2,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 // Create axios instance
 const api = axios.create({
@@ -63,10 +63,32 @@ const makeApiCall = async <T = any>(
     };
   } catch (error: any) {
     console.error('API Error:', error);
+    console.error('Error response:', error.response);
+    console.error('Error status:', error.response?.status);
+    
+    // Handle different error types
+    if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
+      return {
+        success: false,
+        message: 'Cannot connect to server. Please check if the backend is running.',
+        errors: { network: 'Connection refused' },
+      };
+    }
+    
+    if (error.response?.status === 404) {
+      return {
+        success: false,
+        message: 'API endpoint not found. Please check the URL.',
+        errors: { endpoint: 'Not found' },
+      };
+    }
+    
     const message = error.response?.data?.detail ||
       error.response?.data?.message ||
+      error.response?.data?.error ||
       error.message ||
       'An error occurred';
+      
     return {
       success: false,
       message,
@@ -84,12 +106,19 @@ export const authService = {
     email: string;
     username: string;
     password: string;
-    password_confirm: string;
+    password_confirm?: string;
     first_name: string;
     last_name: string;
     user_type: string;
     phone_number?: string;
-  }) => makeApiCall('/auth/register/', 'POST', userData),
+  }) => {
+    // Ensure password_confirm is set if not provided
+    const registrationData = {
+      ...userData,
+      password_confirm: userData.password_confirm || userData.password
+    };
+    return makeApiCall('/auth/register/', 'POST', registrationData);
+  },
 
   logout: () => makeApiCall('/auth/logout/', 'POST'),
 

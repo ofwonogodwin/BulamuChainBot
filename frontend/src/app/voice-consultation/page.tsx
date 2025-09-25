@@ -36,9 +36,9 @@ export default function VoiceConsultationPage() {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const languages = [
-        { code: 'en', name: 'English', flag: '🇺🇸', voice: 'en-US' },
-        { code: 'lg', name: 'Luganda', flag: '🇺🇬', voice: 'en-US' }, // Fallback to English voice
-        { code: 'sw', name: 'Swahili', flag: '🇰🇪', voice: 'sw-KE' }
+        { code: 'en', name: 'English', voice: 'en-US' },
+        { code: 'lg', name: 'Luganda', voice: 'en-US' }, // Fallback to English voice
+        { code: 'sw', name: 'Swahili', voice: 'sw-KE' }
     ];
 
     useEffect(() => {
@@ -233,11 +233,11 @@ export default function VoiceConsultationPage() {
                         <select
                             value={currentLanguage}
                             onChange={(e) => setCurrentLanguage(e.target.value)}
-                            className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                             {languages.map((lang) => (
-                                <option key={lang.code} value={lang.code}>
-                                    {lang.flag} {lang.name}
+                                <option key={lang.code} value={lang.code} className="text-black">
+                                    {lang.name}
                                 </option>
                             ))}
                         </select>
@@ -339,7 +339,7 @@ export default function VoiceConsultationPage() {
                                                 ? 'Elezea dalili zako...'
                                                 : 'Describe your symptoms...'
                                     }
-                                    className="w-full p-4 pr-12 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full p-4 pr-12 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                                     disabled={isProcessing || isListening}
                                 />
 
