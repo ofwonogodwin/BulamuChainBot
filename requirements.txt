@@ -1,0 +1,19 @@
+# BulamuChainBot Project Dependencies
+# This file includes all Python dependencies for the entire project
+
+# Install backend dependencies
+-r backend/requirements.txt
+
+# Additional project-wide dependencies (if any)
+# Add any shared dependencies between frontend and backend here
+
+# Documentation
+Sphinx==7.4.7  # For generating documentation
+sphinx-rtd-theme==2.0.0  # ReadTheDocs theme
+
+# Environment Management
+python-dotenv==1.0.1  # For .env file management
+
+# Project Management
+setuptools==75.1.0
+wheel==0.44.0
