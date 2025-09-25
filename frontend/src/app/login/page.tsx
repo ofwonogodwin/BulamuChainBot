@@ -16,7 +16,7 @@ export default function LoginPage() {
     // Redirect if already authenticated
     useEffect(() => {
         if (isAuthenticated) {
-            router.push('/consultation');
+            router.push('/');
         }
     }, [isAuthenticated, router]);
 
@@ -24,7 +24,7 @@ export default function LoginPage() {
         e.preventDefault();
         const success = await login(email, password);
         if (success) {
-            router.push('/consultation');
+            router.push('/');
         }
     };
 

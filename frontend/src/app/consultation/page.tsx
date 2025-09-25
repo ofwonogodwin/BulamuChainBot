@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { consultationService } from '@/services/api';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/contexts/AuthContext';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -140,9 +142,20 @@ function ConsultationPageContent() {
   if (!consultation) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+        {/* Back to Home Button */}
+        <div className="max-w-2xl mx-auto mb-4">
+          <Link
+            href="/"
+            className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors bg-white rounded-lg px-4 py-2 shadow-sm hover:shadow-md"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Home
+          </Link>
+        </div>
+        
         {/* Header */}
         <div className="max-w-2xl mx-auto mb-6">
-          <div className="flex justify-between items-center bg-white rounded-lg p-4 shadow-sm">
+          <div className="flex items-center bg-white rounded-lg p-4 shadow-sm">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                 <span className="text-white font-medium text-sm">
@@ -154,12 +167,6 @@ function ConsultationPageContent() {
                 <p className="text-sm text-gray-500">{user?.email}</p>
               </div>
             </div>
-            <button
-              onClick={logout}
-              className="text-gray-500 hover:text-gray-700 text-sm"
-            >
-              Sign Out
-            </button>
           </div>
         </div>
 
@@ -178,7 +185,7 @@ function ConsultationPageContent() {
                 <textarea
                   id="symptoms"
                   rows={4}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                   placeholder="Please describe your symptoms in detail..."
                   value={symptoms}
                   onChange={(e) => setSymptoms(e.target.value)}
@@ -192,7 +199,7 @@ function ConsultationPageContent() {
                   </label>
                   <select
                     id="language"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                     value={language}
                     onChange={(e) => setLanguage(e.target.value)}
                   >
@@ -207,7 +214,7 @@ function ConsultationPageContent() {
                   </label>
                   <select
                     id="urgency"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                     value={urgencyLevel}
                     onChange={(e) => setUrgencyLevel(e.target.value)}
                   >
@@ -235,6 +242,17 @@ function ConsultationPageContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+      {/* Back to Home Button */}
+      <div className="max-w-4xl mx-auto mb-4">
+        <Link
+          href="/"
+          className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors bg-white rounded-lg px-4 py-2 shadow-sm hover:shadow-md"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </Link>
+      </div>
+      
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           {/* Header */}
@@ -283,7 +301,7 @@ function ConsultationPageContent() {
               <input
                 type="text"
                 placeholder="Type your message..."
-                className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                 value={currentMessage}
                 onChange={(e) => setCurrentMessage(e.target.value)}
                 onKeyPress={handleKeyPress}

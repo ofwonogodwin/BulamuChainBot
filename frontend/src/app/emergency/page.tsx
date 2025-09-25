@@ -211,7 +211,7 @@ export default function EmergencyPage() {
                                     value={symptoms}
                                     onChange={(e) => setSymptoms(e.target.value)}
                                     placeholder="e.g., severe chest pain, difficulty breathing, fever of 39°C..."
-                                    className="w-full h-32 p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                                    className="w-full h-32 p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-black"
                                     rows={4}
                                 />
                             </div>

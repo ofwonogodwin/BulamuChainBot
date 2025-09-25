@@ -27,7 +27,7 @@ export default function RegisterPage() {
     // Redirect if already authenticated
     useEffect(() => {
         if (isAuthenticated) {
-            router.push('/consultation');
+            router.push('/');
         }
     }, [isAuthenticated, router]);
 

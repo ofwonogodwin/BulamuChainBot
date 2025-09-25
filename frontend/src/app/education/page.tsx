@@ -456,7 +456,7 @@ export default function EducationPage() {
                                 placeholder="Search health topics..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
                             />
                         </div>
 
@@ -464,11 +464,11 @@ export default function EducationPage() {
                         <select
                             value={language}
                             onChange={(e) => setLanguage(e.target.value)}
-                            className="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                         >
-                            <option value="en">🇺🇸 English</option>
-                            <option value="lg">🇺🇬 Luganda</option>
-                            <option value="sw">🇰🇪 Swahili</option>
+                            <option value="en">English</option>
+                            <option value="lg">Luganda</option>
+                            <option value="sw">Swahili</option>
                         </select>
                     </div>
 

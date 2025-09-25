@@ -226,7 +226,7 @@ export default function BlockchainPage() {
                                             value={transactionHash}
                                             onChange={(e) => setTransactionHash(e.target.value)}
                                             placeholder="0x742d35cc6df32ba4c7d1c5f3e8b3f9ea1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e"
-                                            className="w-full p-4 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono text-sm"
+                                            className="w-full p-4 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent font-mono text-sm text-black"
                                         />
                                         <Hash className="absolute right-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                     </div>
