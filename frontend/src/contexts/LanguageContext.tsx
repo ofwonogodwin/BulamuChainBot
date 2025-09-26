@@ -37,7 +37,36 @@ export const EMERGENCY_TRANSLATIONS = {
     locationDenied: "Location access denied. Please enable location in browser settings.",
     locationTimeout: "Location request timed out",
     locationError: "Location error",
-    geolocationNotSupported: "Geolocation not supported by this browser"
+    geolocationNotSupported: "Geolocation not supported by this browser",
+    // Recommendations
+    criticalRecommendation: "IMMEDIATE MEDICAL ATTENTION REQUIRED",
+    highRecommendation: "Seek urgent medical attention within 1 hour",
+    mediumRecommendation: "Medical consultation recommended within 24 hours",
+    lowRecommendation: "Monitor symptoms and consider medical consultation",
+    // Actions for critical
+    criticalAction1: "Call emergency services immediately (999 or 911)",
+    criticalAction2: "Do not move unless absolutely necessary",
+    criticalAction3: "Stay calm and follow emergency operator instructions",
+    criticalAction4: "Have someone stay with you until help arrives",
+    criticalAction5: "If possible, have medical history and medications ready",
+    // Actions for high
+    highAction1: "Contact nearest hospital or clinic immediately",
+    highAction2: "Consider calling emergency services if symptoms worsen",
+    highAction3: "Monitor symptoms closely",
+    highAction4: "Have someone accompany you to medical facility",
+    highAction5: "Bring identification and medical information",
+    // Actions for medium
+    mediumAction1: "Schedule appointment with healthcare provider",
+    mediumAction2: "Monitor symptoms and note any changes",
+    mediumAction3: "Take basic first aid measures if applicable",
+    mediumAction4: "Rest and stay hydrated",
+    mediumAction5: "Seek immediate help if symptoms worsen",
+    // Actions for low
+    lowAction1: "Keep track of symptoms",
+    lowAction2: "Try basic home remedies if appropriate",
+    lowAction3: "Schedule non-urgent medical appointment if symptoms persist",
+    lowAction4: "Rest and maintain good health practices",
+    lowAction5: "Contact healthcare provider if concerned"
   },
   lg: {
     pageTitle: "Okukebera Obulwadde bw'Amaangu",
@@ -65,7 +94,36 @@ export const EMERGENCY_TRANSLATIONS = {
     locationDenied: "Tewakkirizza kufuna ekifo. Nsaba okkirize mu browser yo.",
     locationTimeout: "Okusaba ekifo kumaze ebiseera.",
     locationError: "Kiremye okufuna ekifo",
-    geolocationNotSupported: "Browser eno teyinza kufuna bifo"
+    geolocationNotSupported: "Browser eno teyinza kufuna bifo",
+    // Recommendations
+    criticalRecommendation: "OBUJJANJABI BW'AMAANGU BWETAAGISA AMANGU",
+    highRecommendation: "Noonya obujjanjabi bw'amaangu mu saawa emu",
+    mediumRecommendation: "Obujjanjabi bwetaagisa mu nnaku 24",
+    lowRecommendation: "Weekuume era olowoze ku kugenda ku musawo",
+    // Actions for critical
+    criticalAction1: "Kuba abasawo b'amaangu amangu (999 oba 911)",
+    criticalAction2: "Totambula wabula nga kyetaagisa nnyo",
+    criticalAction3: "Beera muttekeefu era goberera ebiragiro by'abasawo",
+    criticalAction4: "Omuntu abe naawe okutuusa abasawo lwe banaakutuuka",
+    criticalAction5: "Bwe kisoboka, beera n'ebyafaayo bye bulwadde ne ddagala",
+    // Actions for high
+    highAction1: "Kuba eddwaliro oba kiliniki amangu",
+    highAction2: "Lowooza okukuba abasawo bwe binaayongera okuba bibi",
+    highAction3: "Kuuma ng'olaba obubonero bwo",
+    highAction4: "Omuntu akwegatteko okugenda mu ddwaliro",
+    highAction5: "Twalaawo endagiriro yo n'amawulire g'obulwadde bwo",
+    // Actions for medium
+    mediumAction1: "Teekawo olunaku okusisinkana n'omusawo",
+    mediumAction2: "Kuuma ng'olaba obubonero bwo era owandike enkyukakyuka",
+    mediumAction3: "Kola obuyambi obw'omusingi bwe kisoboka",
+    mediumAction4: "Wewummule era onywe amazzi amalungi",
+    mediumAction5: "Noonya obuyambi amangu bwe kinaayongera okuba kibi",
+    // Actions for low
+    lowAction1: "Kuuma ng'ogoberera obubonero bwo",
+    lowAction2: "Gezaako obujjanjabi obw'ewaka bwe kisoboka",
+    lowAction3: "Teekawo okusisinkana n'omusawo obubonero bwe bunaasigala",
+    lowAction4: "Wewummule era okwate empisa nnungi ez'obulamu",
+    lowAction5: "Tusanyukira n'omusawo bw'onaabanga ofaayo"
   },
   sw: {
     pageTitle: "Tathmini ya Dharura ya Afya",
@@ -93,7 +151,36 @@ export const EMERGENCY_TRANSLATIONS = {
     locationDenied: "Ufikiaji wa mahali umekataliwa. Tafadhali ruhusu katika mipangilio ya kivinjari.",
     locationTimeout: "Ombi la mahali limechelewa.",
     locationError: "Hitilafu ya mahali",
-    geolocationNotSupported: "Kivinjari hiki hakitumii huduma ya mahali"
+    geolocationNotSupported: "Kivinjari hiki hakitumii huduma ya mahali",
+    // Recommendations
+    criticalRecommendation: "MATIBABU YA HARAKA YANAHITAJIKA SASA HIVI",
+    highRecommendation: "Tafuta matibabu ya haraka ndani ya saa moja",
+    mediumRecommendation: "Ushauri wa kimatibabu unapendekeza ndani ya masaa 24",
+    lowRecommendation: "Fuatilia dalili na ufikiria kutembelea mtaalamu wa afya",
+    // Actions for critical
+    criticalAction1: "Piga huduma za dharura mara moja (999 au 911)",
+    criticalAction2: "Usihamishwe isipokuwa ni lazimi sana",
+    criticalAction3: "Utulivu na fuata maelekezo ya mwendeshaji wa dharura",
+    criticalAction4: "Mtu awe nawe hadi msaada utakapofikia",
+    criticalAction5: "Ikiwezekana, kuwa na historia ya afya na madawa",
+    // Actions for high
+    highAction1: "Wasiliana na hospitali au kliniki karibu mara moja",
+    highAction2: "Fikiria kupiga huduma za dharura dalili zikizidi kuwa mbaya",
+    highAction3: "Fuatilia dalili kwa makini",
+    highAction4: "Mtu akuongozee kwenda kituo cha afya",
+    highAction5: "Leta kitambulisho na habari za kiafya",
+    // Actions for medium
+    mediumAction1: "Panga miadi na mtoa huduma za afya",
+    mediumAction2: "Fuatilia dalili na andika mabadiliko yoyote",
+    mediumAction3: "Tumia njia za kwanza za msaada ikiwezekana",
+    mediumAction4: "Pumzika na kunywa maji mengi",
+    mediumAction5: "Tafuta msaada wa haraka dalili zikizidi kuwa mbaya",
+    // Actions for low
+    lowAction1: "Fuatilia dalili zako",
+    lowAction2: "Jaribu dawa za nyumbani ikiwezekana",
+    lowAction3: "Panga miadi isiyo ya dharura dalili zikiendelea",
+    lowAction4: "Pumzika na dumu na mazoea mazuri ya afya",
+    lowAction5: "Wasiliana na mtoa huduma za afya ukihisi wasiwasi"
   }
 };
 

@@ -215,9 +215,24 @@ export default function EmergencyPage() {
                         </Link>
                     </div>
 
-                    <div className="flex items-center space-x-2">
-                        <AlertTriangle className="h-6 w-6 text-red-600" />
-                        <span className="font-semibold text-red-600">Emergency Assistant</span>
+                    <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2">
+                            <AlertTriangle className="h-6 w-6 text-red-600" />
+                            <span className="font-semibold text-red-600">Emergency Assistant</span>
+                        </div>
+                        
+                        {/* Language Selector */}
+                        <select
+                            value={currentLanguage}
+                            onChange={(e) => setCurrentLanguage(e.target.value)}
+                            className="bg-white border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
+                        >
+                            {LANGUAGES.map(lang => (
+                                <option key={lang.code} value={lang.code}>
+                                    {lang.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 </div>
             </header>
@@ -228,9 +243,9 @@ export default function EmergencyPage() {
                     <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-8 mb-6">
                         <div className="text-center mb-8">
                             <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                            <h1 className="text-3xl font-bold text-gray-800 mb-2">Emergency Health Assessment</h1>
+                            <h1 className="text-3xl font-bold text-gray-800 mb-2">{t.pageTitle}</h1>
                             <p className="text-gray-600">
-                                Describe your symptoms for immediate risk assessment and guidance
+                                {t.subtitle}
                             </p>
                         </div>
 
@@ -240,31 +255,31 @@ export default function EmergencyPage() {
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center space-x-2">
                                         <MapPin className="h-4 w-4 text-red-600" />
-                                        <span className="text-sm font-medium text-gray-700">Current Location</span>
+                                        <span className="text-sm font-medium text-gray-700">{t.currentLocation}</span>
                                     </div>
-                                    {(location.includes('unavailable') || location.includes('denied') || location.includes('error') || location.includes('not supported') || location.includes('timeout')) && (
+                                    {(location.includes('unavailable') || location.includes('denied') || location.includes('error') || location.includes('not supported') || location.includes('timeout') || location === t.locationUnavailable || location === t.locationDenied || location === t.locationTimeout || location === t.geolocationNotSupported) && (
                                         <button
                                             onClick={() => {
                                                 if (navigator.geolocation) {
-                                                    setLocation('Getting location...');
+                                                    setLocation(t.gettingLocation);
                                                     navigator.geolocation.getCurrentPosition(
                                                         (position) => {
                                                             setLocation(`Lat: ${position.coords.latitude.toFixed(4)}, Long: ${position.coords.longitude.toFixed(4)}`);
                                                         },
                                                         (error) => {
-                                                            let errorMessage = 'Location unavailable';
+                                                            let errorMessage = t.locationUnavailable;
                                                             switch (error.code) {
                                                                 case error.PERMISSION_DENIED:
-                                                                    errorMessage = 'Location access denied. Please enable location in browser settings.';
+                                                                    errorMessage = t.locationDenied;
                                                                     break;
                                                                 case error.POSITION_UNAVAILABLE:
-                                                                    errorMessage = 'Location information unavailable';
+                                                                    errorMessage = t.locationUnavailable;
                                                                     break;
                                                                 case error.TIMEOUT:
-                                                                    errorMessage = 'Location request timed out';
+                                                                    errorMessage = t.locationTimeout;
                                                                     break;
                                                                 default:
-                                                                    errorMessage = `Location error: ${error.message || 'Unknown error'}`;
+                                                                    errorMessage = `${t.locationError}: ${error.message || 'Unknown error'}`;
                                                                     break;
                                                             }
                                                             setLocation(errorMessage);
@@ -276,31 +291,31 @@ export default function EmergencyPage() {
                                                         }
                                                     );
                                                 } else {
-                                                    setLocation('Geolocation not supported by this browser');
+                                                    setLocation(t.geolocationNotSupported);
                                                 }
                                             }}
                                             className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
                                         >
-                                            Retry Location
+                                            {t.retryLocation}
                                         </button>
                                     )}
                                 </div>
                                 <p className="text-sm text-gray-600">{location}</p>
-                                {(location.includes('denied') || location.includes('not supported')) && (
+                                {(location === t.locationDenied || location === t.geolocationNotSupported) && (
                                     <p className="text-xs text-gray-500 mt-2">
-                                        💡 Location helps emergency services find you faster. Please enable in your browser settings.
+                                        {t.locationHelp}
                                     </p>
                                 )}
                             </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Describe your symptoms in detail:
+                                    {t.symptomsLabel}
                                 </label>
                                 <textarea
                                     value={symptoms}
                                     onChange={(e) => setSymptoms(e.target.value)}
-                                    placeholder="e.g., severe chest pain, difficulty breathing, fever of 39°C..."
+                                    placeholder={t.symptomsPlaceholder}
                                     className="w-full h-32 p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none text-black"
                                     rows={4}
                                 />
@@ -314,12 +329,12 @@ export default function EmergencyPage() {
                                 {isAnalyzing ? (
                                     <>
                                         <Loader2 className="h-5 w-5 animate-spin" />
-                                        <span>Analyzing Emergency...</span>
+                                        <span>{t.analyzing}</span>
                                     </>
                                 ) : (
                                     <>
                                         <AlertTriangle className="h-5 w-5" />
-                                        <span>Assess Emergency Level</span>
+                                        <span>{t.assessEmergency}</span>
                                     </>
                                 )}
                             </button>
