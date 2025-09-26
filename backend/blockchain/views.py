@@ -302,3 +302,277 @@ def get_medicine_batch_info(request, batch_number):
         return Response({
             'error': f'Failed to get batch information: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# Consultation Blockchain Endpoints
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_patient_consultation_records(request):
+    """
+    Get all blockchain records for patient's consultations
+    """
+    try:
+        from .consultation_blockchain_service import ConsultationBlockchainService
+        from .models import ConsultationBlockchainRecord
+        
+        blockchain_service = ConsultationBlockchainService()
+        
+        if request.user.user_type == 'patient':
+            # Patients can see their own records
+            consultation_records = blockchain_service.get_patient_consultation_records(request.user)
+        elif request.user.user_type in ['doctor', 'nurse']:
+            # Healthcare providers can see records they have access to
+            consultation_records = blockchain_service.get_provider_accessible_records(request.user)
+        else:
+            return Response({
+                'error': 'Access denied'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        records_data = []
+        for record in consultation_records:
+            # Log access
+            blockchain_service.log_consultation_access(record, request.user, request)
+            
+            record_data = {
+                'id': str(record.id),
+                'consultation_id': str(record.consultation.id),
+                'consultation_hash': record.consultation_hash,
+                'patient': record.patient.username if request.user.user_type != 'patient' else 'You',
+                'symptoms_preview': record.consultation.symptoms_text[:100] + '...' if len(record.consultation.symptoms_text) > 100 else record.consultation.symptoms_text,
+                'severity_score': record.consultation.severity_score,
+                'emergency_detected': record.consultation.emergency_detected,
+                'stored_on_blockchain': record.stored_on_blockchain,
+                'encrypted': record.encrypted,
+                'created_at': record.created_at,
+                'language': record.consultation.language
+            }
+            records_data.append(record_data)
+        
+        return Response({
+            'consultation_records': records_data,
+            'total_count': len(records_data)
+        })
+        
+    except Exception as e:
+        return Response({
+            'error': f'Failed to get consultation records: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def grant_provider_access(request):
+    """
+    Grant healthcare provider access to patient's consultation record
+    """
+    try:
+        from .consultation_blockchain_service import ConsultationBlockchainService
+        from .models import ConsultationBlockchainRecord
+        
+        # Only patients can grant access to their consultations
+        if request.user.user_type != 'patient':
+            return Response({
+                'error': 'Only patients can grant access to their consultations'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        consultation_record_id = request.data.get('consultation_record_id')
+        provider_username = request.data.get('provider_username')
+        access_level = request.data.get('access_level', 'read_only')
+        purpose = request.data.get('purpose', '')
+        expires_in_days = int(request.data.get('expires_in_days', 30))
+        
+        if not consultation_record_id or not provider_username:
+            return Response({
+                'error': 'consultation_record_id and provider_username are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get consultation record
+        try:
+            consultation_record = ConsultationBlockchainRecord.objects.get(
+                id=consultation_record_id,
+                patient=request.user
+            )
+        except ConsultationBlockchainRecord.DoesNotExist:
+            return Response({
+                'error': 'Consultation record not found or not owned by you'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Get healthcare provider
+        try:
+            healthcare_provider = User.objects.get(
+                username=provider_username,
+                user_type__in=['doctor', 'nurse']
+            )
+        except User.DoesNotExist:
+            return Response({
+                'error': 'Healthcare provider not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Grant access
+        blockchain_service = ConsultationBlockchainService()
+        access_record = blockchain_service.grant_provider_access(
+            patient=request.user,
+            healthcare_provider=healthcare_provider,
+            consultation_record=consultation_record,
+            access_level=access_level,
+            purpose=purpose,
+            expires_in_days=expires_in_days
+        )
+        
+        return Response({
+            'message': 'Access granted successfully',
+            'access_record_id': str(access_record.id),
+            'provider': healthcare_provider.username,
+            'access_level': access_record.access_level,
+            'expires_at': access_record.expires_at,
+            'blockchain_hash': access_record.access_grant_hash
+        })
+        
+    except Exception as e:
+        return Response({
+            'error': f'Failed to grant provider access: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def get_consultation_details(request, consultation_record_id):
+    """
+    Get detailed consultation information from blockchain record
+    """
+    try:
+        from .consultation_blockchain_service import ConsultationBlockchainService
+        from .models import ConsultationBlockchainRecord
+        
+        blockchain_service = ConsultationBlockchainService()
+        
+        # Get consultation record
+        try:
+            consultation_record = ConsultationBlockchainRecord.objects.get(id=consultation_record_id)
+        except ConsultationBlockchainRecord.DoesNotExist:
+            return Response({
+                'error': 'Consultation record not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Check access permissions
+        if request.user.user_type == 'patient':
+            # Patients can only access their own consultations
+            if consultation_record.patient != request.user:
+                return Response({
+                    'error': 'Access denied'
+                }, status=status.HTTP_403_FORBIDDEN)
+            provider_access = None
+        elif request.user.user_type in ['doctor', 'nurse']:
+            # Healthcare providers need granted access
+            access_check = blockchain_service.verify_provider_access(request.user, consultation_record)
+            if not access_check['has_access']:
+                return Response({
+                    'error': 'Access denied. No valid access grant found.',
+                    'message': access_check['message']
+                }, status=status.HTTP_403_FORBIDDEN)
+            provider_access = access_check['access_record']
+        else:
+            return Response({
+                'error': 'Access denied'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        # Log access
+        blockchain_service.log_consultation_access(consultation_record, request.user, request, provider_access)
+        
+        # Verify data integrity
+        integrity_check = blockchain_service.verify_consultation_integrity(consultation_record)
+        
+        # Return consultation details
+        consultation = consultation_record.consultation
+        consultation_data = {
+            'id': str(consultation.id),
+            'patient_username': consultation.patient.username,
+            'symptoms': consultation.symptoms_text,
+            'ai_response': consultation.ai_response,
+            'severity_score': consultation.severity_score,
+            'emergency_detected': consultation.emergency_detected,
+            'recommended_actions': consultation.recommended_actions,
+            'language': consultation.language,
+            'consultation_type': consultation.consultation_type,
+            'created_at': consultation.created_at,
+            'updated_at': consultation.updated_at,
+            'blockchain_hash': consultation_record.consultation_hash,
+            'stored_on_blockchain': consultation_record.stored_on_blockchain,
+            'encrypted': consultation_record.encrypted,
+            'integrity_verified': integrity_check['verified'],
+            'integrity_message': integrity_check['message']
+        }
+        
+        return Response(consultation_data)
+        
+    except Exception as e:
+        return Response({
+            'error': f'Failed to get consultation details: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def revoke_provider_access(request):
+    """
+    Revoke healthcare provider's access to consultation record
+    """
+    try:
+        from .consultation_blockchain_service import ConsultationBlockchainService
+        from .models import ConsultationBlockchainRecord
+        
+        # Only patients can revoke access to their consultations
+        if request.user.user_type != 'patient':
+            return Response({
+                'error': 'Only patients can revoke access to their consultations'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        consultation_record_id = request.data.get('consultation_record_id')
+        provider_username = request.data.get('provider_username')
+        
+        if not consultation_record_id or not provider_username:
+            return Response({
+                'error': 'consultation_record_id and provider_username are required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Get consultation record
+        try:
+            consultation_record = ConsultationBlockchainRecord.objects.get(
+                id=consultation_record_id,
+                patient=request.user
+            )
+        except ConsultationBlockchainRecord.DoesNotExist:
+            return Response({
+                'error': 'Consultation record not found or not owned by you'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Get healthcare provider
+        try:
+            healthcare_provider = User.objects.get(username=provider_username)
+        except User.DoesNotExist:
+            return Response({
+                'error': 'Healthcare provider not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Revoke access
+        blockchain_service = ConsultationBlockchainService()
+        success = blockchain_service.revoke_provider_access(
+            patient=request.user,
+            healthcare_provider=healthcare_provider,
+            consultation_record=consultation_record
+        )
+        
+        if success:
+            return Response({
+                'message': f'Access revoked for {provider_username}'
+            })
+        else:
+            return Response({
+                'error': 'No active access found to revoke'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+    except Exception as e:
+        return Response({
+            'error': f'Failed to revoke provider access: {str(e)}'
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -2,7 +2,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api';
 
 // Create axios instance
 const api = axios.create({
@@ -122,7 +122,7 @@ export const authService = {
 
   logout: () => makeApiCall('/auth/logout/', 'POST'),
 
-  getCurrentUser: () => makeApiCall('/auth/profile/'),
+  getCurrentUser: () => makeApiCall('/auth/user/'),
 
   updateProfile: (data: any) => makeApiCall('/auth/profile/', 'PUT', data),
 

@@ -29,11 +29,11 @@ interface EmergencyAlert {
 export default function EmergencyPage() {
     const { currentLanguage, setCurrentLanguage, getEmergencyTranslations } = useLanguage();
     const t = getEmergencyTranslations();
-    
+
     const [symptoms, setSymptoms] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [alert, setAlert] = useState<EmergencyAlert | null>(null);
-    const [location, setLocation] = useState(t.gettingLocation);    const emergencyHotlines = [
+    const [location, setLocation] = useState(t.gettingLocation); const emergencyHotlines = [
         { name: 'Police Emergency', number: '999', available: '24/7' },
         { name: 'Medical Emergency', number: '911', available: '24/7' },
         { name: 'Mulago Hospital', number: '+256-414-554-000', available: '24/7' },
@@ -67,7 +67,7 @@ export default function EmergencyPage() {
                 },
                 (error) => {
                     let errorMessage = t.locationUnavailable;
-                    
+
                     switch (error.code) {
                         case error.PERMISSION_DENIED:
                             errorMessage = t.locationDenied;
@@ -82,7 +82,7 @@ export default function EmergencyPage() {
                             errorMessage = `${t.locationError}: ${error.message}`;
                             break;
                     }
-                    
+
                     console.warn('Geolocation error:', errorMessage);
                     setLocation(errorMessage);
                 },
@@ -123,43 +123,43 @@ export default function EmergencyPage() {
 
             if (hasCriticalSymptoms) {
                 severity = 'critical';
-                recommendation = 'IMMEDIATE MEDICAL ATTENTION REQUIRED';
+                recommendation = t.criticalRecommendation;
                 actions = [
-                    'Call emergency services immediately (999 or 911)',
-                    'Do not move unless absolutely necessary',
-                    'Stay calm and follow emergency operator instructions',
-                    'Have someone stay with you until help arrives',
-                    'If possible, have medical history and medications ready'
+                    t.criticalAction1,
+                    t.criticalAction2,
+                    t.criticalAction3,
+                    t.criticalAction4,
+                    t.criticalAction5
                 ];
             } else if (hasHighSeveritySymptoms) {
                 severity = 'high';
-                recommendation = 'Seek urgent medical attention within 1 hour';
+                recommendation = t.highRecommendation;
                 actions = [
-                    'Contact nearest hospital or clinic immediately',
-                    'Consider calling emergency services if symptoms worsen',
-                    'Monitor symptoms closely',
-                    'Have someone accompany you to medical facility',
-                    'Bring identification and medical information'
+                    t.highAction1,
+                    t.highAction2,
+                    t.highAction3,
+                    t.highAction4,
+                    t.highAction5
                 ];
             } else if (lowerSymptoms.includes('fever') || lowerSymptoms.includes('pain')) {
                 severity = 'medium';
-                recommendation = 'Medical consultation recommended within 24 hours';
+                recommendation = t.mediumRecommendation;
                 actions = [
-                    'Schedule appointment with healthcare provider',
-                    'Monitor symptoms and note any changes',
-                    'Take basic first aid measures if applicable',
-                    'Rest and stay hydrated',
-                    'Seek immediate help if symptoms worsen'
+                    t.mediumAction1,
+                    t.mediumAction2,
+                    t.mediumAction3,
+                    t.mediumAction4,
+                    t.mediumAction5
                 ];
             } else {
                 severity = 'low';
-                recommendation = 'Monitor symptoms and consider medical consultation';
+                recommendation = t.lowRecommendation;
                 actions = [
-                    'Keep track of symptoms',
-                    'Try basic home remedies if appropriate',
-                    'Schedule non-urgent medical appointment if symptoms persist',
-                    'Stay hydrated and get adequate rest',
-                    'Contact healthcare provider if concerned'
+                    t.lowAction1,
+                    t.lowAction2,
+                    t.lowAction3,
+                    t.lowAction4,
+                    t.lowAction5
                 ];
             }
 
@@ -220,7 +220,7 @@ export default function EmergencyPage() {
                             <AlertTriangle className="h-6 w-6 text-red-600" />
                             <span className="font-semibold text-red-600">Emergency Assistant</span>
                         </div>
-                        
+
                         {/* Language Selector */}
                         <select
                             value={currentLanguage}
@@ -348,7 +348,7 @@ export default function EmergencyPage() {
                             <div className="flex items-center space-x-4 mb-4">
                                 {getSeverityIcon(alert.severity)}
                                 <div className="flex-1">
-                                    <h2 className="text-2xl font-bold capitalize">{alert.severity} Priority</h2>
+                                    <h2 className="text-2xl font-bold capitalize">{alert.severity} {t.priority}</h2>
                                     <p className="text-lg font-semibold">{alert.recommendation}</p>
                                 </div>
                                 <div className="text-right">
@@ -364,7 +364,7 @@ export default function EmergencyPage() {
                         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-6">
                             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
                                 <Check className="h-6 w-6 text-green-600" />
-                                <span>Immediate Actions</span>
+                                <span>{t.immediateActions}</span>
                             </h3>
                             <div className="space-y-3">
                                 {alert.actions.map((action, index) => (
@@ -382,7 +382,7 @@ export default function EmergencyPage() {
                         <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 p-6">
                             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center space-x-2">
                                 <Phone className="h-6 w-6 text-green-600" />
-                                <span>Emergency Contacts</span>
+                                <span>{t.emergencyContacts}</span>
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {alert.hotlines.map((hotline, index) => (

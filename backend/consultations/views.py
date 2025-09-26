@@ -45,6 +45,17 @@ class ConsultationListCreateView(generics.ListCreateAPIView):
             consultation.recommended_actions = ai_response.get('recommendations', '')
             consultation.save()
             
+            # Store consultation on blockchain automatically for patients
+            from blockchain.consultation_blockchain_service import ConsultationBlockchainService
+            try:
+                blockchain_service = ConsultationBlockchainService()
+                blockchain_record = blockchain_service.store_consultation_on_blockchain(consultation)
+                
+                # Log successful blockchain storage
+                print(f"✅ Consultation {consultation.id} stored on blockchain with hash {blockchain_record.consultation_hash}")
+            except Exception as e:
+                print(f"❌ Failed to store consultation {consultation.id} on blockchain: {str(e)}")
+            
             # Check for emergency
             emergency_service = EmergencyDetectionService()
             if emergency_service.detect_emergency(consultation):

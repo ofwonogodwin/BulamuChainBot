@@ -14,7 +14,8 @@ from .serializers import (
     UserRegistrationSerializer, UserProfileSerializer, 
     DoctorProfileSerializer, DoctorRegistrationSerializer,
     OTPRequestSerializer, OTPVerificationSerializer,
-    PasswordResetSerializer, PasswordResetConfirmSerializer
+    PasswordResetSerializer, PasswordResetConfirmSerializer,
+    UserSummarySerializer
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -419,3 +420,14 @@ class PasswordResetConfirmView(APIView):
             return Response({
                 'error': 'Invalid reset code'
             }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CurrentUserView(generics.RetrieveAPIView):
+    """
+    Get current authenticated user information
+    """
+    serializer_class = UserSummarySerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user

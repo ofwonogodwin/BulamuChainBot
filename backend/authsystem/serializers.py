@@ -249,6 +249,6 @@ class UserSummarySerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = [
-            'id', 'username', 'email', 'full_name', 'user_type',
+            'id', 'username', 'email', 'first_name', 'last_name', 'full_name', 'user_type',
             'user_type_display', 'is_verified', 'date_joined'
         ]

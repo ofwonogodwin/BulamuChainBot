@@ -167,3 +167,131 @@ class PatientConsentRecord(models.Model):
     def __str__(self):
         status = "Granted" if self.granted else "Denied"
         return f"{self.patient.username} - {self.consent_type}: {status}"
+
+
+class ConsultationBlockchainRecord(models.Model):
+    """
+    Model to track consultation data stored on blockchain
+    """
+    ACCESS_TYPES = [
+        ('patient', 'Patient Access'),
+        ('healthcare_provider', 'Healthcare Provider Access'),
+        ('emergency', 'Emergency Access'),
+        ('research', 'Research Access'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    consultation = models.OneToOneField('consultations.Consultation', on_delete=models.CASCADE, related_name='blockchain_record')
+    patient = models.ForeignKey('authsystem.CustomUser', on_delete=models.CASCADE, related_name='consultation_blockchain_records')
+    
+    # Blockchain hash of consultation data
+    consultation_hash = models.CharField(max_length=64, unique=True)
+    symptoms_hash = models.CharField(max_length=64)
+    ai_response_hash = models.CharField(max_length=64)
+    
+    # Blockchain transaction details
+    blockchain_transaction = models.ForeignKey(BlockchainTransaction, on_delete=models.SET_NULL, null=True, blank=True)
+    stored_on_blockchain = models.BooleanField(default=False)
+    
+    # Encryption metadata
+    encryption_key_hash = models.CharField(max_length=64)
+    encrypted = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['consultation_hash']),
+            models.Index(fields=['patient']),
+            models.Index(fields=['stored_on_blockchain']),
+        ]
+    
+    def __str__(self):
+        return f"Blockchain Record for Consultation {self.consultation.id} - Patient: {self.patient.username}"
+
+
+class HealthcareProviderAccess(models.Model):
+    """
+    Model to track healthcare provider access to patient consultation blockchain records
+    """
+    ACCESS_LEVELS = [
+        ('read_only', 'Read Only'),
+        ('read_write', 'Read and Write'),
+        ('full_access', 'Full Access'),
+    ]
+    
+    ACCESS_STATUS = [
+        ('pending', 'Pending Patient Approval'),
+        ('approved', 'Approved by Patient'),
+        ('denied', 'Denied by Patient'),
+        ('revoked', 'Revoked by Patient'),
+        ('expired', 'Access Expired'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    # Access parties
+    patient = models.ForeignKey('authsystem.CustomUser', on_delete=models.CASCADE, related_name='granted_provider_accesses')
+    healthcare_provider = models.ForeignKey('authsystem.CustomUser', on_delete=models.CASCADE, related_name='provider_accesses')
+    consultation_record = models.ForeignKey(ConsultationBlockchainRecord, on_delete=models.CASCADE, related_name='provider_accesses')
+    
+    # Access details
+    access_level = models.CharField(max_length=15, choices=ACCESS_LEVELS, default='read_only')
+    access_status = models.CharField(max_length=10, choices=ACCESS_STATUS, default='pending')
+    purpose = models.TextField(help_text="Medical purpose for accessing this consultation")
+    
+    # Access control
+    granted_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField()
+    revoked_at = models.DateTimeField(null=True, blank=True)
+    
+    # Blockchain tracking
+    access_grant_hash = models.CharField(max_length=64, blank=True)
+    blockchain_transaction = models.ForeignKey(BlockchainTransaction, on_delete=models.SET_NULL, null=True, blank=True, related_name='provider_access_grants')
+    
+    # Audit trail
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['patient', 'healthcare_provider', 'consultation_record']
+        indexes = [
+            models.Index(fields=['patient', 'access_status']),
+            models.Index(fields=['healthcare_provider', 'access_status']),
+            models.Index(fields=['access_grant_hash']),
+        ]
+    
+    def __str__(self):
+        return f"Provider Access: {self.healthcare_provider.username} -> Patient: {self.patient.username} ({self.access_status})"
+
+
+class ConsultationAccessLog(models.Model):
+    """
+    Model to log all accesses to consultation blockchain records
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
+    consultation_record = models.ForeignKey(ConsultationBlockchainRecord, on_delete=models.CASCADE, related_name='access_logs')
+    accessed_by = models.ForeignKey('authsystem.CustomUser', on_delete=models.CASCADE, related_name='consultation_accesses')
+    provider_access = models.ForeignKey(HealthcareProviderAccess, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    # Access details
+    access_type = models.CharField(max_length=20, choices=ConsultationBlockchainRecord.ACCESS_TYPES)
+    ip_address = models.GenericIPAddressField()
+    user_agent = models.TextField()
+    
+    # Blockchain verification
+    access_verified_on_blockchain = models.BooleanField(default=False)
+    blockchain_transaction = models.ForeignKey(BlockchainTransaction, on_delete=models.SET_NULL, null=True, blank=True, related_name='access_logs')
+    
+    accessed_at = models.DateTimeField(default=timezone.now)
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['consultation_record', 'accessed_at']),
+            models.Index(fields=['accessed_by', 'accessed_at']),
+        ]
+    
+    def __str__(self):
+        return f"Access by {self.accessed_by.username} to consultation {self.consultation_record.consultation.id} at {self.accessed_at}"

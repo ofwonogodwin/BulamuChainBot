@@ -7,6 +7,7 @@ urlpatterns = [
     path('login/', views.LoginView.as_view(), name='login'),
     path('verify-phone/', views.VerifyPhoneView.as_view(), name='verify-phone'),
     path('profile/', views.UserProfileView.as_view(), name='user-profile'),
+    path('user/', views.CurrentUserView.as_view(), name='current-user'),
     
     # Doctor-specific endpoints
     path('doctors/register/', views.DoctorRegisterView.as_view(), name='doctor-register'),

@@ -20,4 +20,10 @@ urlpatterns = [
     
     # Network status
     path('status/', views.BlockchainStatusView.as_view(), name='blockchain-status'),
+    
+    # Consultation Blockchain Endpoints
+    path('consultations/', views.get_patient_consultation_records, name='consultation-records'),
+    path('consultations/<uuid:consultation_record_id>/', views.get_consultation_details, name='consultation-details'),
+    path('consultations/grant-access/', views.grant_provider_access, name='grant-provider-access'),
+    path('consultations/revoke-access/', views.revoke_provider_access, name='revoke-provider-access'),
 ]

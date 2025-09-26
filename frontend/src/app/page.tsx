@@ -307,6 +307,15 @@ export default function HomePage() {
             </div>
           )}
 
+          {/* Welcome message for authenticated users */}
+          {isAuthenticated && user && (
+            <div className="mb-3 p-2 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-sm font-medium text-blue-800">
+                Welcome, {user.first_name || user.email?.split('@')[0] || 'User'}! 👋
+              </p>
+            </div>
+          )}
+
           {/* User info for authenticated users */}
           {isAuthenticated && user && (
             <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg">
@@ -479,7 +488,7 @@ export default function HomePage() {
                   <Stethoscope className="h-16 w-16 text-white" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-3">
-                  Welcome to BulamuChainBot
+                  BulamuChainBot
                 </h2>
                 <p className="text-gray-600 mb-4">
                   AI-powered health assistant improving healthcare access for rural

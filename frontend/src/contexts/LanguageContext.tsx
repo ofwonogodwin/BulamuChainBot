@@ -66,7 +66,10 @@ export const EMERGENCY_TRANSLATIONS = {
     lowAction2: "Try basic home remedies if appropriate",
     lowAction3: "Schedule non-urgent medical appointment if symptoms persist",
     lowAction4: "Rest and maintain good health practices",
-    lowAction5: "Contact healthcare provider if concerned"
+    lowAction5: "Contact healthcare provider if concerned",
+    // Display labels
+    priority: "Priority",
+    emergencyContacts: "Emergency Contacts"
   },
   lg: {
     pageTitle: "Okukebera Obulwadde bw'Amaangu",
@@ -123,7 +126,10 @@ export const EMERGENCY_TRANSLATIONS = {
     lowAction2: "Gezaako obujjanjabi obw'ewaka bwe kisoboka",
     lowAction3: "Teekawo okusisinkana n'omusawo obubonero bwe bunaasigala",
     lowAction4: "Wewummule era okwate empisa nnungi ez'obulamu",
-    lowAction5: "Tusanyukira n'omusawo bw'onaabanga ofaayo"
+    lowAction5: "Tusanyukira n'omusawo bw'onaabanga ofaayo",
+    // Display labels
+    priority: "Omutindo",
+    emergencyContacts: "Ennamba z'Amaangu"
   },
   sw: {
     pageTitle: "Tathmini ya Dharura ya Afya",
@@ -180,7 +186,10 @@ export const EMERGENCY_TRANSLATIONS = {
     lowAction2: "Jaribu dawa za nyumbani ikiwezekana",
     lowAction3: "Panga miadi isiyo ya dharura dalili zikiendelea",
     lowAction4: "Pumzika na dumu na mazoea mazuri ya afya",
-    lowAction5: "Wasiliana na mtoa huduma za afya ukihisi wasiwasi"
+    lowAction5: "Wasiliana na mtoa huduma za afya ukihisi wasiwasi",
+    // Display labels
+    priority: "Kipaumbele",
+    emergencyContacts: "Mawasiliano ya Dharura"
   }
 };
 
