@@ -9,7 +9,7 @@ BulamuChainBot is an innovative healthcare technology solution designed to provi
 ### Key Features
 
 - 🤖 **AI-Powered Medical Consultations** - Get instant medical advice using advanced AI models
-- 🗣️ **Multi-Language Voice Support** - Consultations in English and Luganda
+- **Multi-Language Voice Support** - Consultations in English and Luganda
 -  **Blockchain Medical Records** - Secure, immutable medical record storage
 -  **Privacy & Consent Management** - Patient-controlled access to medical data
 - **Emergency Detection** - AI-powered emergency situation identification
@@ -40,7 +40,7 @@ BulamuChainBot is an innovative healthcare technology solution designed to provi
 - **Medicine Authentication** - Anti-counterfeit verification system
 - **Ethereum Sepolia** testnet deployment
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -113,27 +113,7 @@ BulamuChainBot is an innovative healthcare technology solution designed to provi
 
 ### Smart Contracts Setup
 
-1. **Navigate to contracts directory**
 
-   ```bash
-   cd ../smart_contracts
-   ```
-
-2. **Install Truffle dependencies**
-
-   ```bash
-   npm install
-   ```
-
-3. **Deploy contracts**
-
-   ```bash
-   truffle migrate --network sepolia
-   ```
-
-## 🔧 Configuration
-
-### Environment Variables
 
 Create a `.env` file in the backend directory:
 
@@ -197,16 +177,6 @@ CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 - `POST /api/blockchain/grant-consent/` - Grant provider access
 - `POST /api/blockchain/revoke-consent/` - Revoke provider access
 
-## 🧪 Testing
-
-### Backend Tests
-
-```bash
-cd backend
-python manage.py test
-# Or with pytest
-pytest
-```
 
 ### Registration API Test
 
@@ -227,6 +197,7 @@ The platform supports:
 
 - **English** - Primary language for international users
 - **Luganda** - Local language support for Ugandan users
+- Swahili
 
 Voice recognition and synthesis available in both languages using:
 
@@ -252,15 +223,7 @@ The AI system monitors consultations for emergency indicators:
 - **Emergency Contact** notifications
 - **Healthcare Provider** escalation
 
-## 📱 Mobile Compatibility
-
-- Responsive design for all screen sizes
-- Progressive Web App (PWA) capabilities
-- Offline functionality for basic features
-- Touch-optimized interface
-
-## 🤝 Contributing
-
+## Getting the Project
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
@@ -275,27 +238,6 @@ The AI system monitors consultations for emergency indicators:
 - Update documentation for API changes
 - Follow semantic versioning
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👥 Team
-
-- **Development Team** - BulamuChainBot Contributors
-- **Blockchain Integration** - Smart Contract Specialists
-- **AI/ML Engineers** - Medical AI Development
-- **Healthcare Advisors** - Medical Domain Experts
-
-## 🆘 Support
-
-For support and questions:
-
-- Create an issue on GitHub
-- Contact the development team
-- Check the documentation wiki
-- Join our community discussions
-
-## 🚀 Roadmap
 
 ### Phase 1 (Current)
 
@@ -303,13 +245,6 @@ For support and questions:
 - ✅ Blockchain medical records
 - ✅ Multi-language support
 - ✅ Emergency detection
-
-### Phase 2 (Upcoming)
-
-- 📋 Telemedicine appointments
-- 🏥 Healthcare provider dashboard
-- 📊 Analytics and reporting
-- 🔄 Integration with health systems
 
 ### Phase 3 (Future)
 
@@ -320,4 +255,3 @@ For support and questions:
 
 ---
 
-Built with ❤️ for accessible healthcare in Uganda and beyond
