@@ -10,9 +10,11 @@ import {
     ArrowLeft,
     Check,
     X,
-    Loader2
+    Loader2,
+    Globe
 } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage, LANGUAGES } from '@/contexts/LanguageContext';
 
 interface EmergencyAlert {
     id: string;
@@ -25,12 +27,13 @@ interface EmergencyAlert {
 }
 
 export default function EmergencyPage() {
+    const { currentLanguage, setCurrentLanguage, getEmergencyTranslations } = useLanguage();
+    const t = getEmergencyTranslations();
+    
     const [symptoms, setSymptoms] = useState('');
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [alert, setAlert] = useState<EmergencyAlert | null>(null);
-    const [location, setLocation] = useState<string>('');
-
-    const emergencyHotlines = [
+    const [location, setLocation] = useState(t.gettingLocation);    const emergencyHotlines = [
         { name: 'Police Emergency', number: '999', available: '24/7' },
         { name: 'Medical Emergency', number: '911', available: '24/7' },
         { name: 'Mulago Hospital', number: '+256-414-554-000', available: '24/7' },
@@ -53,7 +56,7 @@ export default function EmergencyPage() {
         // Get user's location with proper error handling
         const getLocation = () => {
             if (!navigator.geolocation) {
-                setLocation('Geolocation not supported by this browser');
+                setLocation(t.geolocationNotSupported);
                 return;
             }
 
@@ -63,20 +66,20 @@ export default function EmergencyPage() {
                     setLocation(`Lat: ${position.coords.latitude.toFixed(4)}, Long: ${position.coords.longitude.toFixed(4)}`);
                 },
                 (error) => {
-                    let errorMessage = 'Location unavailable';
+                    let errorMessage = t.locationUnavailable;
                     
                     switch (error.code) {
                         case error.PERMISSION_DENIED:
-                            errorMessage = 'Location access denied by user';
+                            errorMessage = t.locationDenied;
                             break;
                         case error.POSITION_UNAVAILABLE:
-                            errorMessage = 'Location information unavailable';
+                            errorMessage = t.locationUnavailable;
                             break;
                         case error.TIMEOUT:
-                            errorMessage = 'Location request timed out';
+                            errorMessage = t.locationTimeout;
                             break;
                         default:
-                            errorMessage = `Location error: ${error.message}`;
+                            errorMessage = `${t.locationError}: ${error.message}`;
                             break;
                     }
                     
@@ -92,7 +95,7 @@ export default function EmergencyPage() {
         };
 
         getLocation();
-    }, []);
+    }, [t]);
 
     const analyzeEmergency = async () => {
         if (!symptoms.trim()) return;
@@ -232,6 +235,64 @@ export default function EmergencyPage() {
                         </div>
 
                         <div className="space-y-6">
+                            {/* Location Status */}
+                            <div className="bg-gray-50 p-4 rounded-lg border">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center space-x-2">
+                                        <MapPin className="h-4 w-4 text-red-600" />
+                                        <span className="text-sm font-medium text-gray-700">Current Location</span>
+                                    </div>
+                                    {(location.includes('unavailable') || location.includes('denied') || location.includes('error') || location.includes('not supported') || location.includes('timeout')) && (
+                                        <button
+                                            onClick={() => {
+                                                if (navigator.geolocation) {
+                                                    setLocation('Getting location...');
+                                                    navigator.geolocation.getCurrentPosition(
+                                                        (position) => {
+                                                            setLocation(`Lat: ${position.coords.latitude.toFixed(4)}, Long: ${position.coords.longitude.toFixed(4)}`);
+                                                        },
+                                                        (error) => {
+                                                            let errorMessage = 'Location unavailable';
+                                                            switch (error.code) {
+                                                                case error.PERMISSION_DENIED:
+                                                                    errorMessage = 'Location access denied. Please enable location in browser settings.';
+                                                                    break;
+                                                                case error.POSITION_UNAVAILABLE:
+                                                                    errorMessage = 'Location information unavailable';
+                                                                    break;
+                                                                case error.TIMEOUT:
+                                                                    errorMessage = 'Location request timed out';
+                                                                    break;
+                                                                default:
+                                                                    errorMessage = `Location error: ${error.message || 'Unknown error'}`;
+                                                                    break;
+                                                            }
+                                                            setLocation(errorMessage);
+                                                        },
+                                                        {
+                                                            enableHighAccuracy: false,
+                                                            timeout: 10000,
+                                                            maximumAge: 300000
+                                                        }
+                                                    );
+                                                } else {
+                                                    setLocation('Geolocation not supported by this browser');
+                                                }
+                                            }}
+                                            className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition-colors"
+                                        >
+                                            Retry Location
+                                        </button>
+                                    )}
+                                </div>
+                                <p className="text-sm text-gray-600">{location}</p>
+                                {(location.includes('denied') || location.includes('not supported')) && (
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        💡 Location helps emergency services find you faster. Please enable in your browser settings.
+                                    </p>
+                                )}
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Describe your symptoms in detail:
@@ -244,13 +305,6 @@ export default function EmergencyPage() {
                                     rows={4}
                                 />
                             </div>
-
-                            {location && (
-                                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                                    <MapPin className="h-4 w-4" />
-                                    <span>Location: {location}</span>
-                                </div>
-                            )}
 
                             <button
                                 onClick={analyzeEmergency}
