@@ -8,7 +8,7 @@ BulamuChainBot is an innovative healthcare technology solution designed to provi
 
 ### Key Features
 
-- 🤖 **AI-Powered Medical Consultations** - Get instant medical advice using advanced AI models
+- **AI-Powered Medical Consultations** - Get instant medical advice using advanced AI models
 - **Multi-Language Voice Support** - Consultations in English and Luganda
 -  **Blockchain Medical Records** - Secure, immutable medical record storage
 -  **Privacy & Consent Management** - Patient-controlled access to medical data
@@ -16,7 +16,7 @@ BulamuChainBot is an innovative healthcare technology solution designed to provi
 - **Modern Web Interface** - Responsive Next.js frontend with real-time updates
 - **Voice Processing** - Speech-to-text and text-to-speech capabilities
 
-## 🏗️ Architecture
+## Architecture
 
 ### Backend (Django REST API)
 
@@ -146,8 +146,6 @@ CONTRACT_ADDRESS_MEDICINE_AUTH=deployed-medicine-contract-address
 CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ```
 
-## 📖 API Documentation
-
 ### Authentication Endpoints
 
 - `POST /api/auth/register/` - User registration
@@ -178,20 +176,7 @@ CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 - `POST /api/blockchain/revoke-consent/` - Revoke provider access
 
 
-### Registration API Test
-
-```bash
-./test_registration.sh
-```
-
-### Frontend Tests
-
-```bash
-cd frontend
-npm test
-```
-
-## 🌍 Multi-Language Support
+## Multi-Language Support
 
 The platform supports:
 
@@ -205,7 +190,7 @@ Voice recognition and synthesis available in both languages using:
 - Azure Cognitive Services
 - Google Text-to-Speech
 
-## 🔒 Security Features
+## Security Features
 
 - **JWT Authentication** with automatic token refresh
 - **Blockchain Immutability** for medical records
@@ -214,7 +199,7 @@ Voice recognition and synthesis available in both languages using:
 - **CORS Protection** for API security
 - **Input Validation** and sanitization
 
-## 🚨 Emergency Detection
+## Emergency Detection
 
 The AI system monitors consultations for emergency indicators:
 
@@ -241,17 +226,16 @@ The AI system monitors consultations for emergency indicators:
 
 ### Phase 1 (Current)
 
-- ✅ Core consultation system
-- ✅ Blockchain medical records
-- ✅ Multi-language support
-- ✅ Emergency detection
+- Core consultation system
+- Blockchain medical records
+- Multi-language support
+- Emergency detection
 
 ### Phase 3 (Future)
 
-- 🤖 Advanced AI diagnostics
-- 🌐 Multi-country deployment
-- 📱 Mobile applications
-- 🔗 IoT device integration
+- 🤖vanced AI diagnostics
+- Multi-country deployment
+- Mobile applications
+- IoT device integration
 
----
 
