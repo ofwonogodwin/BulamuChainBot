@@ -13,6 +13,7 @@ interface UseWeb3Return {
     isConnecting: boolean;
     walletInfo: WalletInfo | null;
     error: string | null;
+    wasDisconnected: boolean;
 
     // Functions
     connect: () => Promise<void>;
@@ -28,10 +29,18 @@ export function useWeb3(): UseWeb3Return {
     const [isConnecting, setIsConnecting] = useState(false);
     const [walletInfo, setWalletInfo] = useState<WalletInfo | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [wasDisconnected, setWasDisconnected] = useState(false);
 
     // Check if already connected on mount
     useEffect(() => {
-        checkConnection();
+        // Check if user previously disconnected
+        const hasDisconnected = localStorage.getItem('wallet_disconnected');
+        setWasDisconnected(!!hasDisconnected);
+
+        // Only auto-connect if user previously connected and hasn't explicitly disconnected
+        if (!hasDisconnected) {
+            checkConnection();
+        }
         setupEventListeners();
 
         return () => {
@@ -85,11 +94,18 @@ export function useWeb3(): UseWeb3Return {
                 // User disconnected
                 setIsConnected(false);
                 setWalletInfo(null);
-                toast.success('Wallet disconnected');
+                // Don't show toast if user intentionally disconnected
+                const hasDisconnected = localStorage.getItem('wallet_disconnected');
+                if (!hasDisconnected) {
+                    toast('Wallet disconnected from MetaMask');
+                }
             } else {
-                // User switched accounts
-                checkConnection();
-                toast.success('Account switched');
+                // Only reconnect if user hasn't intentionally disconnected
+                const hasDisconnected = localStorage.getItem('wallet_disconnected');
+                if (!hasDisconnected) {
+                    checkConnection();
+                    toast.success('Account switched');
+                }
             }
         };
 
@@ -131,6 +147,10 @@ export function useWeb3(): UseWeb3Return {
         setError(null);
 
         try {
+            // Clear the disconnection flag when user manually connects
+            localStorage.removeItem('wallet_disconnected');
+            setWasDisconnected(false);
+
             const wallet = await web3Service.connectWallet();
             if (wallet) {
                 setWalletInfo(wallet);
@@ -146,6 +166,10 @@ export function useWeb3(): UseWeb3Return {
 
     const disconnect = useCallback(async () => {
         try {
+            // Mark as intentionally disconnected
+            localStorage.setItem('wallet_disconnected', 'true');
+            setWasDisconnected(true);
+
             await web3Service.disconnectWallet();
             setIsConnected(false);
             setWalletInfo(null);
@@ -223,6 +247,7 @@ export function useWeb3(): UseWeb3Return {
         isConnecting,
         walletInfo,
         error,
+        wasDisconnected,
         connect,
         disconnect,
         switchNetwork,

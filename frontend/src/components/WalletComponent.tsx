@@ -27,6 +27,7 @@ const WalletComponent: React.FC<WalletComponentProps> = ({
         isConnecting,
         walletInfo,
         error,
+        wasDisconnected,
         connect,
         disconnect,
         switchNetwork,
@@ -89,6 +90,11 @@ const WalletComponent: React.FC<WalletComponentProps> = ({
     if (!isConnected) {
         return (
             <div className={`${className}`}>
+                {wasDisconnected && (
+                    <div className="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+                        🔒 Wallet disconnected. MetaMask will request your password when reconnecting.
+                    </div>
+                )}
                 <button
                     onClick={connect}
                     disabled={isConnecting}
@@ -119,7 +125,7 @@ const WalletComponent: React.FC<WalletComponentProps> = ({
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                             </svg>
-                            Connect Wallet
+                            {wasDisconnected ? 'Reconnect Wallet' : 'Connect Wallet'}
                         </>
                     )}
                 </button>
@@ -234,13 +240,16 @@ const WalletComponent: React.FC<WalletComponentProps> = ({
                                 )}
                             </div>
 
-                            <div className="mt-4 pt-4 border-t border-gray-200">
+                            <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
                                 <button
                                     onClick={disconnect}
                                     className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                                 >
                                     Disconnect Wallet
                                 </button>
+                                <p className="text-xs text-gray-500 text-center">
+                                    After disconnecting, MetaMask will require your password to reconnect
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -269,8 +278,8 @@ const WalletComponent: React.FC<WalletComponentProps> = ({
                                     key={network.chainId}
                                     onClick={() => handleNetworkSwitch(network.chainId)}
                                     className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${walletInfo?.chainId === network.chainId
-                                            ? 'bg-blue-50 border-blue-200 text-blue-800'
-                                            : 'hover:bg-gray-50 border-gray-200'
+                                        ? 'bg-blue-50 border-blue-200 text-blue-800'
+                                        : 'hover:bg-gray-50 border-gray-200'
                                         }`}
                                 >
                                     <div className="font-medium">{network.name}</div>

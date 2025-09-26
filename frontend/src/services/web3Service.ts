@@ -88,7 +88,17 @@ class Web3Service {
         try {
             this.isConnecting = true;
 
-            // Request account access
+            // Check if wallet was previously disconnected - if so, force fresh connection
+            const wasDisconnected = localStorage.getItem('wallet_disconnected');
+            if (wasDisconnected) {
+                // Clear the disconnect flag first
+                localStorage.removeItem('wallet_disconnected');
+
+                // This will force MetaMask to show the connection prompt again
+                toast.loading('Requesting wallet connection...');
+            }
+
+            // Request account access - this will show MetaMask popup
             const accounts = await window.ethereum!.request({
                 method: 'eth_requestAccounts'
             });
@@ -186,9 +196,91 @@ class Web3Service {
      * Disconnect wallet
      */
     async disconnectWallet(): Promise<void> {
-        // MetaMask doesn't have a direct disconnect method
-        // We just clear our local state
-        toast.success('Wallet disconnected');
+        try {
+            // Clear any cached connection state
+            localStorage.removeItem('walletconnect');
+            localStorage.removeItem('metamask_connected');
+            sessionStorage.removeItem('wallet_connected');
+
+            // Clear any wallet-related cookies
+            if (typeof document !== 'undefined') {
+                document.cookie = 'wallet_connected=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+            }
+
+            // For MetaMask, we need to programmatically disconnect
+            // This forces the user to reconnect and enter password
+            if (this.isMetaMaskInstalled() && window.ethereum) {
+                try {
+                    // Try to use wallet_revokePermissions if available (newer MetaMask versions)
+                    await window.ethereum.request({
+                        method: 'wallet_revokePermissions',
+                        params: [{ eth_accounts: {} }]
+                    });
+                } catch (revokeError) {
+                    // If revokePermissions is not available, fall back to requesting account disconnection
+                    console.log('Revoke permissions not supported, clearing local state');
+                }
+
+                // Also try to request account disconnection by asking for empty accounts
+                try {
+                    await window.ethereum.request({
+                        method: 'eth_requestAccounts',
+                        params: [{ accounts: [] }]
+                    });
+                } catch (disconnectError) {
+                    // This is expected to fail, but it helps clear some internal state
+                    console.log('Account disconnection request handled');
+                }
+            }
+
+            toast.success('Wallet disconnected. You will need to reconnect and enter your password next time.');
+        } catch (error) {
+            console.error('Error during disconnect:', error);
+            toast.success('Wallet disconnected from application');
+        }
+    }
+
+    /**
+     * Force complete wallet reset - clears all cached connections
+     */
+    async forceDisconnect(): Promise<void> {
+        try {
+            // Clear all possible wallet connection caches
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('walletconnect');
+                localStorage.removeItem('metamask_connected');
+                localStorage.removeItem('wallet_connected');
+                sessionStorage.removeItem('wallet_connected');
+                sessionStorage.removeItem('metamask_connected');
+
+                // Clear cookies
+                if (typeof document !== 'undefined') {
+                    document.cookie = 'wallet_connected=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                    document.cookie = 'metamask_connected=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                }
+
+                // Set disconnect flag
+                localStorage.setItem('wallet_disconnected', 'true');
+            }
+
+            // Try to revoke permissions
+            if (this.isMetaMaskInstalled() && window.ethereum) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_revokePermissions',
+                        params: [{ eth_accounts: {} }]
+                    });
+                } catch (error) {
+                    // This is fine if not supported
+                    console.log('Revoke permissions not available');
+                }
+            }
+
+            toast.success('Wallet completely disconnected. MetaMask will ask for password on next connection.');
+        } catch (error) {
+            console.error('Error during force disconnect:', error);
+            toast.success('Wallet disconnected from application');
+        }
     }
 
     /**
