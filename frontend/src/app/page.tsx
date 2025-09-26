@@ -8,7 +8,6 @@ import {
   Stethoscope,
   Plus,
   Trash2,
-  MessageCircle,
   Mic,
   Activity,
   Shield,
@@ -19,6 +18,7 @@ import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { consultationService } from '@/services/api';
 
 interface ChatMessage {
   id: string;
@@ -39,6 +39,7 @@ export default function HomePage() {
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<Chat | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { isAuthenticated, logout, user } = useAuth();
   const { getPlaceholderText, getGreetingText, getCurrentLanguageData } = useLanguage();
@@ -93,7 +94,7 @@ export default function HomePage() {
     if (cleanMessage.length <= 30) {
       return cleanMessage;
     }
-    
+
     // Try to find a good break point
     const words = cleanMessage.split(' ');
     let title = '';
@@ -104,7 +105,7 @@ export default function HomePage() {
         break;
       }
     }
-    
+
     // Add ellipsis if truncated
     return title + (title.length < cleanMessage.length ? '...' : '');
   };
@@ -117,10 +118,10 @@ export default function HomePage() {
   };
 
   const sendMessage = async () => {
-    if (!message.trim()) return;
+    if (!message.trim() || isLoading) return;
 
     let currentChat = activeChat;
-    
+
     // If no active chat, create one
     if (!currentChat) {
       currentChat = {
@@ -142,38 +143,92 @@ export default function HomePage() {
     };
 
     const updatedMessages = [...currentChat.messages, userMessage];
-    
+
     // Update chat with user message
     const updatedChat = { ...currentChat, messages: updatedMessages };
     const updatedChats = chats.map(chat => chat.id === currentChat!.id ? updatedChat : chat);
     setChats(updatedChats);
     setActiveChat(updatedChat);
-    
-    setMessage('');
 
-    // Generate AI response based on current language
-    setTimeout(() => {
-      const aiResponse = generateHealthResponse(userMessage.content, getCurrentLanguageData().code);
-      
+    const currentMessage = message;
+    setMessage('');
+    setIsLoading(true);
+
+    try {
+      // Get conversation history for context
+      const conversationHistory = updatedMessages.slice(-10).map(msg => ({
+        content: msg.content,
+        isUser: msg.isUser
+      }));
+
+      // Call the AI service with Gemini
+      const response = await consultationService.chatWithAI({
+        message: currentMessage,
+        language: getCurrentLanguageData().code,
+        conversation_history: conversationHistory
+      });
+
+      if (response.success && response.data) {
+        const aiMessage: ChatMessage = {
+          id: Date.now().toString() + '_ai',
+          content: response.data.response || response.data.message,
+          isUser: false,
+          timestamp: new Date()
+        };
+
+        const finalMessages = [...updatedMessages, aiMessage];
+        const finalChat = { ...updatedChat, messages: finalMessages };
+
+        const finalChats = chats.map(chat =>
+          chat.id === currentChat!.id ? finalChat : chat
+        );
+        setChats(finalChats);
+        setActiveChat(finalChat);
+      } else {
+        // Fallback to local response if API fails
+        const fallbackResponse = generateFallbackResponse(currentMessage, getCurrentLanguageData().code);
+
+        const aiMessage: ChatMessage = {
+          id: Date.now().toString() + '_ai',
+          content: fallbackResponse,
+          isUser: false,
+          timestamp: new Date()
+        };
+
+        const finalMessages = [...updatedMessages, aiMessage];
+        const finalChat = { ...updatedChat, messages: finalMessages };
+
+        const finalChats = chats.map(chat =>
+          chat.id === currentChat!.id ? finalChat : chat
+        );
+        setChats(finalChats);
+        setActiveChat(finalChat);
+      }
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+
+      // Fallback to local response on error
+      const fallbackResponse = generateFallbackResponse(currentMessage, getCurrentLanguageData().code);
+
       const aiMessage: ChatMessage = {
         id: Date.now().toString() + '_ai',
-        content: aiResponse,
+        content: fallbackResponse,
         isUser: false,
         timestamp: new Date()
       };
 
       const finalMessages = [...updatedMessages, aiMessage];
       const finalChat = { ...updatedChat, messages: finalMessages };
-      
-      const finalChats = chats.map(chat => 
+
+      const finalChats = chats.map(chat =>
         chat.id === currentChat!.id ? finalChat : chat
       );
       setChats(finalChats);
       setActiveChat(finalChat);
-    }, 1000);
-  };
-
-  const generateHealthResponse = (symptoms: string, language: string): string => {
+    } finally {
+      setIsLoading(false);
+    }
+  }; const generateFallbackResponse = (symptoms: string, language: string): string => {
     const responses = {
       en: {
         fever: "Based on your fever symptoms, I recommend: 1) Rest and stay hydrated 2) Take paracetamol for fever 3) Monitor your temperature 4) See a doctor if fever persists over 3 days or exceeds 39°C. If you experience difficulty breathing or severe symptoms, seek immediate medical attention.",
@@ -233,7 +288,7 @@ export default function HomePage() {
               <Plus className="h-4 w-4" />
             </button>
           </div>
-          
+
           {/* Auth buttons for non-authenticated users */}
           {!isAuthenticated && (
             <div className="flex flex-col space-y-2">
@@ -284,11 +339,10 @@ export default function HomePage() {
           {chats.map((chat) => (
             <div
               key={chat.id}
-              className={`p-3 rounded-lg cursor-pointer transition-colors group ${
-                activeChat?.id === chat.id
-                  ? 'bg-blue-100 border border-blue-300'
-                  : 'bg-gray-50 hover:bg-gray-100'
-              }`}
+              className={`p-3 rounded-lg cursor-pointer transition-colors group ${activeChat?.id === chat.id
+                ? 'bg-blue-100 border border-blue-300'
+                : 'bg-gray-50 hover:bg-gray-100'
+                }`}
               onClick={() => setActiveChat(chat)}
             >
               <div className="flex items-start justify-between">
@@ -321,10 +375,10 @@ export default function HomePage() {
               </div>
             </div>
           ))}
-          
+
           {chats.length === 0 && (
             <div className="text-center py-8 text-gray-500">
-              <MessageCircle className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+              <Stethoscope className="h-12 w-12 mx-auto mb-3 text-gray-300" />
               <p className="text-sm">No conversations yet</p>
               <p className="text-xs">Start a new chat to get help</p>
             </div>
@@ -346,7 +400,7 @@ export default function HomePage() {
                 <p className="text-sm text-blue-600">{getGreetingText()}</p>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => {
@@ -356,7 +410,7 @@ export default function HomePage() {
                 className={`p-2 rounded-lg transition-colors ${audioEnabled
                   ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
                   : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
-                }`}
+                  }`}
                 title={audioEnabled ? 'Disable Audio' : 'Enable Audio'}
               >
                 {audioEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
@@ -381,28 +435,42 @@ export default function HomePage() {
                   <span className="text-sm font-medium">Back to Main Page</span>
                 </button>
               </div>
-              
+
               {activeChat.messages.map((msg) => (
                 <div
                   key={msg.id}
                   className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
-                      msg.isUser
-                        ? 'bg-blue-600 text-white rounded-br-md'
-                        : 'bg-gray-100 text-gray-900 rounded-bl-md'
-                    }`}
+                    className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${msg.isUser
+                      ? 'bg-blue-600 text-white rounded-br-md'
+                      : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                      }`}
                   >
                     <p className="text-sm">{msg.content}</p>
-                    <p className={`text-xs mt-1 ${
-                      msg.isUser ? 'text-blue-100' : 'text-gray-500'
-                    }`}>
+                    <p className={`text-xs mt-1 ${msg.isUser ? 'text-blue-100' : 'text-gray-500'
+                      }`}>
                       {msg.timestamp.toLocaleTimeString()}
                     </p>
                   </div>
                 </div>
               ))}
+
+              {/* AI Thinking Indicator */}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="max-w-xs lg:max-w-md px-4 py-3 rounded-2xl bg-gray-100 text-gray-900 rounded-bl-md">
+                    <div className="flex items-center space-x-2">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                      </div>
+                      <span className="text-xs text-gray-500">AI is thinking...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center">
@@ -419,7 +487,7 @@ export default function HomePage() {
                 <p className="text-gray-600 mb-6">
                   and underserved Ugandans
                 </p>
-                
+
                 <p className="text-blue-600 font-semibold text-center mb-8">
                   Health that Talks, Records that Last
                 </p>
@@ -440,18 +508,6 @@ export default function HomePage() {
                       <div className="px-1 py-0.5 rounded-full text-[8px] font-bold bg-green-500 text-white">
                         New
                       </div>
-                    </Link>
-
-                    <Link
-                      href="/consultation"
-                      className="group flex items-center space-x-2 p-2 rounded-xl hover:bg-gray-50 transition-all duration-200 flex-1 justify-center"
-                    >
-                      <div className="flex items-center justify-center w-8 h-8 bg-blue-50 rounded-full group-hover:bg-blue-100 transition-colors">
-                        <MessageCircle className="h-3 w-3 text-blue-600" />
-                      </div>
-                      <span className="text-xs font-medium text-gray-600 group-hover:text-gray-800">
-                        Consultation
-                      </span>
                     </Link>
 
                     <Link
@@ -523,11 +579,15 @@ export default function HomePage() {
               </div>
               <button
                 onClick={sendMessage}
-                disabled={!message.trim()}
+                disabled={!message.trim() || isLoading}
                 className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                title="Send Message"
+                title={isLoading ? "AI is thinking..." : "Send Message"}
               >
-                <Send className="h-5 w-5" />
+                {isLoading ? (
+                  <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  <Send className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>

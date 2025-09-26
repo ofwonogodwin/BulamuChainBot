@@ -307,7 +307,7 @@ class VoiceConsultationService:
                 return speech_result
             
             # Process the text through AI consultation service
-            from .ai_consultation_service import AIConsultationService
+            from .services import AIConsultationService
             ai_service = AIConsultationService()
             
             ai_response = ai_service.process_consultation_message(

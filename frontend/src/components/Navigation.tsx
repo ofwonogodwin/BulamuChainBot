@@ -10,11 +10,11 @@ import {
     ChevronDown,
     Menu,
     X,
-    BarChart3,
-    MessageCircle
+    BarChart3
 } from 'lucide-react';
 import Link from 'next/link';
 import { useLanguage, LANGUAGES } from '@/contexts/LanguageContext';
+import WalletComponent from './WalletComponent';
 
 export default function Navigation() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -28,13 +28,6 @@ export default function Navigation() {
             description: 'Talk to AI in your language',
             href: '/voice-consultation',
             badge: 'New'
-        },
-        {
-            icon: <MessageCircle className="h-4 w-4" />,
-            title: 'Consultation',
-            description: 'Chat with AI health assistant',
-            href: '/consultation',
-            badge: null
         },
         {
             icon: <Activity className="h-4 w-4" />,
@@ -56,6 +49,13 @@ export default function Navigation() {
             description: 'Learn about health topics',
             href: '/education',
             badge: null
+        },
+        {
+            icon: <BarChart3 className="h-4 w-4" />,
+            title: 'Web3 Test',
+            description: 'Test MetaMask integration',
+            href: '/web3-test',
+            badge: 'Demo'
         }
     ];
 
@@ -71,6 +71,11 @@ export default function Navigation() {
             >
                 <Menu className="h-5 w-5 text-gray-700" />
             </button>
+
+            {/* Wallet Component - Top Right for Desktop */}
+            <div className="fixed top-6 right-48 z-30 hidden md:block">
+                <WalletComponent className="inline-block" />
+            </div>
 
             {/* Language Selector - Top Right for Desktop */}
             <div className="fixed top-6 right-24 z-30 hidden md:block">
@@ -145,9 +150,8 @@ export default function Navigation() {
                                     {LANGUAGES.map((lang) => (
                                         <button
                                             key={lang.code}
-                                            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm rounded-lg hover:bg-gray-50 transition-colors ${
-                                                currentLanguage === lang.code ? 'bg-blue-50 text-blue-600' : 'text-black'
-                                            }`}
+                                            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm rounded-lg hover:bg-gray-50 transition-colors ${currentLanguage === lang.code ? 'bg-blue-50 text-blue-600' : 'text-black'
+                                                }`}
                                             onClick={() => {
                                                 setCurrentLanguage(lang.code);
                                                 setIsMenuOpen(false);
@@ -179,8 +183,8 @@ export default function Navigation() {
                                                     <span className="font-medium text-gray-800">{feature.title}</span>
                                                     {feature.badge && (
                                                         <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${feature.badge === 'Critical'
-                                                                ? 'bg-red-500 text-white'
-                                                                : 'bg-green-500 text-white'
+                                                            ? 'bg-red-500 text-white'
+                                                            : 'bg-green-500 text-white'
                                                             }`}>
                                                             {feature.badge}
                                                         </span>

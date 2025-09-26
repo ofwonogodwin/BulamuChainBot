@@ -37,6 +37,9 @@ urlpatterns = [
     path('api/records/', include('records.urls')),
     path('api/blockchain/', include('blockchain.urls')),
     
+    # AI Engine - Intelligent Medical Chatbot with RAG
+    path('api/ai/', include('ai_engine.urls')),
+    
     # Direct API endpoints as specified in requirements
     path('api/consult/', include('consultations.urls')),
     path('api/consult-audio/', include('consultations.urls')), 

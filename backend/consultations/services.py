@@ -261,6 +261,123 @@ class AIConsultationService:
             'recommendations': 'Please consult with a healthcare provider for proper medical evaluation.'
         }
 
+    def chat_with_ai(self, message, language='en', conversation_history=None):
+        """
+        Chat with AI using Gemini for health consultation
+        """
+        try:
+            # Import Google Generative AI
+            import google.generativeai as genai
+            
+            # Configure Gemini API
+            gemini_api_key = getattr(settings, 'GOOGLE_GEMINI_API_KEY', '')
+            if not gemini_api_key:
+                return self._fallback_chat_response(message, language)
+            
+            genai.configure(api_key=gemini_api_key)
+            
+            # Create the model
+            model = genai.GenerativeModel('models/gemini-2.5-flash')
+            
+            # Build context with conversation history
+            context = self._build_chat_context(message, language, conversation_history)
+            
+            # Generate response
+            response = model.generate_content(context)
+            
+            return {
+                'response': response.text if response.text else self._fallback_chat_response(message, language)['response'],
+                'success': True
+            }
+            
+        except Exception as e:
+            logger.error(f"Gemini API error: {str(e)}")
+            return self._fallback_chat_response(message, language)
+
+    def _build_chat_context(self, message, language, conversation_history=None):
+        """
+        Build chat context for Gemini API
+        """
+        language_instructions = {
+            'en': "Respond in English",
+            'lg': "Respond in Luganda (a Ugandan language)",
+            'sw': "Respond in Swahili"
+        }
+        
+        base_prompt = f"""You are BulamuChainBot, an AI health assistant designed specifically for rural and underserved communities in Uganda. 
+
+Your role:
+- Provide helpful, accurate health information and guidance
+- Be empathetic and culturally sensitive
+- Always recommend consulting healthcare professionals for serious concerns
+- Keep responses concise but informative
+- {language_instructions.get(language, 'Respond in English')}
+
+Guidelines:
+- Don't diagnose medical conditions
+- Provide general health guidance and first aid information
+- Encourage seeking professional medical help when needed
+- Be supportive and understanding
+- Consider the rural Ugandan context in your responses
+
+"""
+
+        if conversation_history and len(conversation_history) > 0:
+            base_prompt += "\nConversation history:\n"
+            for msg in conversation_history[-5:]:  # Last 5 messages for context
+                role = "User" if msg.get('isUser') else "Assistant"
+                base_prompt += f"{role}: {msg.get('content', '')}\n"
+        
+        base_prompt += f"\nUser's current message: {message}\n\nPlease provide a helpful response:"
+        
+        return base_prompt
+
+    def _fallback_chat_response(self, message, language):
+        """
+        Enhanced fallback response system when Gemini API is not available
+        """
+        message_lower = message.lower()
+        
+        # Common health conditions and responses
+        health_responses = {
+            'en': {
+                'headache': "For headaches, try resting in a quiet, dark room. Stay hydrated and consider applying a cold compress to your forehead. If headaches persist or are severe, please consult a healthcare provider.",
+                'fever': "For fever, rest and drink plenty of fluids. You can use paracetamol or ibuprofen to reduce fever. Monitor your temperature and seek medical care if fever is above 38.5°C (101°F) or persists.",
+                'cough': "For persistent cough, stay hydrated, use honey for throat soothing, and avoid irritants. If cough lasts more than 3 weeks, has blood, or comes with difficulty breathing, see a doctor immediately.",
+                'stomach': "For stomach issues, try eating bland foods, staying hydrated with small sips of water, and avoiding dairy or fatty foods. If you have severe pain, vomiting, or blood in stool, seek immediate medical attention.",
+                'pain': "For pain management, rest the affected area and consider over-the-counter pain relievers if appropriate. Apply ice for injuries or heat for muscle tension. Persistent or severe pain needs medical evaluation.",
+                'tired': "Fatigue can be due to lack of sleep, stress, or underlying conditions. Ensure 7-9 hours of sleep, eat nutritious meals, and stay hydrated. If fatigue persists despite rest, consult a healthcare provider.",
+                'malaria': "Malaria prevention: Use mosquito nets, wear long sleeves at dusk/dawn, and use repellent. Symptoms include fever, chills, and headache. Seek immediate medical care if you suspect malaria.",
+                'default': "I understand your health concern. While I can provide general guidance, it's important to consult with a healthcare professional for proper diagnosis and treatment. Please describe your symptoms in more detail."
+            },
+            'lg': {
+                'headache': "Omutwe singa gukubagira, wewummule mu kisenge ekisiikiris era ekiziba. Nywa amazzi mangi era teeka ekintu ekinnyogovu ku kyenyi kyo. Singa omutwe gukubya buli kaseera, laba omusawo.",
+                'fever': "Omusujja singa guli, wewummule era nywa amazzi mangi. Osobola okukozesa panadol okukakkanya omusujja. Singa omusujja gusukka 38.5°C oba gukyeyongera, laba omusawo amangu.",
+                'cough': "Okukoola kw'emirembe egiwanvu, nywa amazzi mangi era kozesa omubisi gw'enjuki okuwonyawo omumiro. Singa okukoola kukyeyongera oba kuliko omusai, laba omusawo amangu.",
+                'stomach': "Olubuto singa lukubagira, lya emmere entono era nywa amazzi matono matono. Weekweke amata n'emmere ezimu masavu. Singa olina obulumi obungi, laba omusawo.",
+                'pain': "Obulumi, wewummule ekitundu ekikubagira era kozesa eddagala ly'obulumi eritembebwa mu dduka singa kikulu. Singa obulumi bukeyongera, laba omusawo.",
+                'tired': "Okukoowa kuyinza okuva mu butamattidde, okwesigisa oba obulwadde obulala. Webaka essaawa 7-9, lya emmere engimu, era nywa amazzi mangi.",
+                'malaria': "Okuziyiza omusujja gw'ensiri: kozesa akatimba k'ensiri, bambala engoye empanvu nga obudde buwungeera, era kozesa eddagala ly'ensiri.",
+                'default': "Ntegeera ekirakubidde ku bulamu bwo. Newankubadde nsobola okukuwa amagezi ag'okutandikira, kikulu olabe omusawo omukugu okufuna obujjanjabi obututuufu."
+            }
+        }
+        
+        # Find relevant response based on keywords
+        responses = health_responses.get(language, health_responses['en'])
+        
+        for condition, response in responses.items():
+            if condition != 'default' and condition in message_lower:
+                return {
+                    'response': response,
+                    'success': False
+                }
+        
+        # Default response
+        return {
+            'response': responses['default'],
+            'success': False
+        }
+
 class EmergencyDetectionService:
     """
     Service for detecting medical emergencies from symptoms

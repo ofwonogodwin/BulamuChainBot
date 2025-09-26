@@ -307,3 +307,53 @@ def acknowledge_emergency_alert(request, alert_id):
         return Response({
             'error': 'Emergency alert not found'
         }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])  # Allow anonymous access for demo
+def ai_chat(request):
+    """
+    Chat with AI using Gemini for health consultation
+    """
+    try:
+        message = request.data.get('message', '')
+        language = request.data.get('language', 'en')
+        conversation_history = request.data.get('conversation_history', [])
+        
+        if not message.strip():
+            return Response({
+                'error': 'Message cannot be empty'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Initialize AI service
+        ai_service = AIConsultationService()
+        
+        # Get AI response using Gemini
+        ai_response = ai_service.chat_with_ai(
+            message=message,
+            language=language,
+            conversation_history=conversation_history
+        )
+        
+        return Response({
+            'success': True,
+            'response': ai_response.get('response', ''),
+            'language': language,
+            'timestamp': timezone.now().isoformat()
+        })
+        
+    except Exception as e:
+        # Fallback response
+        fallback_responses = {
+            'en': "I understand your concern. While I can provide general guidance, it's important to consult with a healthcare professional for proper diagnosis and treatment. Please describe your symptoms in more detail.",
+            'lg': "Ntegeera ekirakubidde. Newankubadde nsobola okukuwa amagezi ag'okutandikira, kikulu olabe omusawo omukugu okufuna obujjanjabi obututuufu. Nnyonyola obubonero bwo mu bujjuvu.",
+            'sw': "Ninaelewa wasiwasi wako. Ingawa ninaweza kutoa mwongozo wa jumla, ni muhimu kuona mtaalamu wa afya kwa uchunguzi na matibabu sahihi. Tafadhali elezea dalili zako kwa undani zaidi."
+        }
+        
+        return Response({
+            'success': True,
+            'response': fallback_responses.get(language, fallback_responses['en']),
+            'language': language,
+            'timestamp': timezone.now().isoformat(),
+            'note': 'Using fallback response due to service unavailability'
+        })

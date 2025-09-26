@@ -50,19 +50,48 @@ export default function EmergencyPage() {
     ];
 
     useEffect(() => {
-        // Get user's location
-        if (navigator.geolocation) {
+        // Get user's location with proper error handling
+        const getLocation = () => {
+            if (!navigator.geolocation) {
+                setLocation('Geolocation not supported by this browser');
+                return;
+            }
+
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     // In a real app, you would reverse geocode this to get the address
                     setLocation(`Lat: ${position.coords.latitude.toFixed(4)}, Long: ${position.coords.longitude.toFixed(4)}`);
                 },
                 (error) => {
-                    console.error('Error getting location:', error);
-                    setLocation('Location unavailable');
+                    let errorMessage = 'Location unavailable';
+                    
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = 'Location access denied by user';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = 'Location information unavailable';
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = 'Location request timed out';
+                            break;
+                        default:
+                            errorMessage = `Location error: ${error.message}`;
+                            break;
+                    }
+                    
+                    console.warn('Geolocation error:', errorMessage);
+                    setLocation(errorMessage);
+                },
+                {
+                    enableHighAccuracy: false, // Use less accurate but faster location
+                    timeout: 10000, // 10 second timeout
+                    maximumAge: 300000 // Accept cached location up to 5 minutes old
                 }
             );
-        }
+        };
+
+        getLocation();
     }, []);
 
     const analyzeEmergency = async () => {

@@ -65,7 +65,7 @@ const makeApiCall = async <T = any>(
     console.error('API Error:', error);
     console.error('Error response:', error.response);
     console.error('Error status:', error.response?.status);
-    
+
     // Handle different error types
     if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
       return {
@@ -74,7 +74,7 @@ const makeApiCall = async <T = any>(
         errors: { network: 'Connection refused' },
       };
     }
-    
+
     if (error.response?.status === 404) {
       return {
         success: false,
@@ -82,13 +82,13 @@ const makeApiCall = async <T = any>(
         errors: { endpoint: 'Not found' },
       };
     }
-    
+
     const message = error.response?.data?.detail ||
       error.response?.data?.message ||
       error.response?.data?.error ||
       error.message ||
       'An error occurred';
-      
+
     return {
       success: false,
       message,
@@ -167,6 +167,13 @@ export const consultationService = {
 
   getEmergencyAlerts: () =>
     makeApiCall('/consultations/emergency-alerts/'),
+
+  // AI Chat Service using Gemini
+  chatWithAI: (data: {
+    message: string;
+    language: string;
+    conversation_history?: Array<{ content: string; isUser: boolean }>;
+  }) => makeApiCall('/consultations/ai-chat/', 'POST', data),
 };
 
 // Medical Records Service
